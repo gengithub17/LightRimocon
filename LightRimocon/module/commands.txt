@@ -1,0 +1,46 @@
+LightRimocon.c作成
+Makefile記載
+
+カーネルバージョンとカーネルヘッダーバージョンの一致確認
+	カーネルバージョン : uname -r
+		sudo apt-get raspberrypi-kernelで最新?
+	ヘッダー : /usr/src/linux-headers-***/
+		sudo apt-get raspberrypi-kernel-headersで最新?
+	/lib/modules/(カーネルバージョン)/buildにMakefileがあるか(それを使ってコンパイルするため)
+
+make実行
+モジュールのロード : insmod LightRimocon.ko
+
+まずメジャー番号，マイナー番号確認
+	本モジュールではロード時に/var/log/syslogに出力しているためそこを確認
+	また cat /proc/devicesでもメジャー番号確認可能. マイナー番号は大体0
+
+スペシャルファイル作成
+	デバイスファイル名はlrimoとする
+	sudo mknod /dev/lrimo c [major番号] [minor番号]
+	sudo chmod 666 /dev/lrimo
+
+使い方
+	スペシャルファイルをfread, fwriteすれば，事前に組まれたプログラムに従って動作する
+
+モジュール作成コマンド一覧
+	make
+	sudo insmod LightRimocon.ko
+	tail /var/log/syslog
+	sudo mknod /dev/lrimo c 
+	sudo chmod 666 /dev/lrimo
+	tail /var/log/syslog
+
+モジュール削除
+	sudo rm /dev/lrimo
+	sudo rmmod LightRimocon
+	make clean
+
+	sudo rm /dev/lrimo && sudo rmmod LightRimocon && make clean
+
+自動起動
+	sudo cp LightRimocon.ko /lib/modules/$(uname -r)/kernel/drivers/.
+	sudo depmod -ae #カーネルモジュールの依存関係を更新
+	/etc/modules-load.d/modules.confに，LightRimoconを追記
+		おそらくこうすることで，再起動時にinsmodを自動でやってくれるっぽい
+		cファイルではinsmod時に自動で/dev/lrimo作成もやる

@@ -1,0 +1,5 @@
+学習
+python3 receive.py -r -g27 -f light.json light_off
+
+送信
+python3 receive.py -p -g19 -f light.json light_on
